@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>연구용 설문</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; }
+        .stage { display: none; } /* 각 단계를 기본적으로 숨김 */
+        .question { margin-bottom: 1em; }
+    </style>
+</head>
+<body>
+
+    <div id="stage1-start" class="stage">
+        <h2>설문 시작</h2>
+        <label for="userId">참가자 ID를 입력해주세요:</label><br>
+        <input type="text" id="userId" name="userId" required><br><br>
+        <button id="startSurveyBtn">설문 시작하기</button>
+    </div>
+
+    <div id="stage2-pre" class="stage">
+        <h2>1차 설문 (실험 전)</h2>
+        <form id="preSurveyForm"></form>
+        <button id="nextToProtocolBtn">다음</button>
+    </div>
+
+    <div id="stage3-protocol" class="stage">
+        <h2>프로토콜 교육</h2>
+        <p>여기에 동영상, 텍스트 등 교육 자료를 넣어주세요.</p>
+        <p>교육을 마친 후 '다음' 버튼을 눌러주세요.</p>
+        <button id="nextToPostBtn">다음 (2차 설문 시작)</button>
+    </div>
+
+    <div id="stage4-post" class="stage">
+        <h2>2차 설문 (실험 후)</h2>
+        <form id="postSurveyForm"></form>
+        <button id="submitFinalBtn">최종 제출</button>
+    </div>
+    
+    <div id="stage5-complete" class="stage">
+        <h2>설문 완료</h2>
+        <p>참여해주셔서 감사합니다.</p>
+    </div>
+
+    <script>
+        // ====== 1. 질문 Pool ======
+        const questions = [
+            { q: "샘플 질문 1", options: ["A", "B", "C"], answer: "A" },
+            { q: "샘플 질문 2", options: ["True", "False"], answer: "True" },
+            { q: "샘플 질문 3", options: ["빨강", "파랑", "초록"], answer: "초록" }
+        ];
+
+        // ====== 2. 전역 변수 설정 ======
+        let userId = '';
+        let preStartTime;
+        let postStartTime;
+
+        // Google Apps Script URL
+        const scriptURL = "https://script.google.com/macros/s/AKfycby4G5gWZeEz9bF49nrJeP6WXosP63OMldAB7Up9D_eFbA5NdNbqZqjUPm6dMC5zIZLjUw/exec";
+
+        // ====== 3. DOM 요소 및 함수 ======
+        const showStage = (id) => {
+            document.querySelectorAll('.stage').forEach(el => el.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+        };
+
+        const createQuestions = (formElement, questionList) => {
+            formElement.innerHTML = ''; // 기존 내용 지우기
+            questionList.forEach((item, idx) => {
+                const div = document.createElement("div");
+                div.className = "question";
+                div.innerHTML = `<p>Q${idx + 1}. ${item.q}</p>`;
+                item.options.forEach(opt => {
+                    div.innerHTML += `
+                        <label>
+                            <input type="radio" name="q${idx}" value="${opt}"> ${opt}
+                        </label><br>`;
+                });
+                formElement.appendChild(div);
+            });
+        };
+
+        const getSurveyResults = (formElement) => {
+            let correct = 0, wrong = 0;
+            const answers = [];
+            questions.forEach((item, idx) => {
+                const checked = formElement.querySelector(`input[name="q${idx}"]:checked`);
+                const ans = checked ? checked.value : "";
+                answers.push(ans);
+                if (ans === item.answer) correct++;
+                else wrong++;
+            });
+            return { correct, wrong, answers };
+        };
+
+        const sendData = (payload) => {
+            return fetch(scriptURL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            }).then(res => res.json());
+        };
+
+        // ====== 4. 이벤트 리스너 ======
+        document.getElementById('startSurveyBtn').addEventListener('click', () => {
+            const inputId = document.getElementById('userId').value.trim();
+            if (!inputId) {
+                alert("참가자 ID를 입력해주세요.");
+                return;
+            }
+            userId = inputId;
+            preStartTime = Date.now();
+            createQuestions(document.getElementById('preSurveyForm'), questions);
+            showStage('stage2-pre');
+        });
+
+        document.getElementById('nextToProtocolBtn').addEventListener('click', () => {
+            const preSurveyForm = document.getElementById('preSurveyForm');
+            const { correct, wrong, answers } = getSurveyResults(preSurveyForm);
+            const duration = Math.round((Date.now() - preStartTime) / 1000);
+
+            const payload = {
+                respondent: userId,
+                phase: "pre",
+                time: duration,
+                correct: correct,
+                wrong: wrong,
+                answers: answers
+            };
+            
+            sendData(payload)
+                .then(res => {
+                    alert("1차 설문이 저장되었습니다. 이제 프로토콜 교육을 진행합니다.");
+                    showStage('stage3-protocol');
+                })
+                .catch(err => alert("1차 설문 데이터 저장 중 에러 발생: " + err));
+        });
+
+        document.getElementById('nextToPostBtn').addEventListener('click', () => {
+            postStartTime = Date.now();
+            createQuestions(document.getElementById('postSurveyForm'), questions);
+            showStage('stage4-post');
+        });
+
+        document.getElementById('submitFinalBtn').addEventListener('click', () => {
+            const postSurveyForm = document.getElementById('postSurveyForm');
+            const { correct, wrong, answers } = getSurveyResults(postSurveyForm);
+            const duration = Math.round((Date.now() - postStartTime) / 1000);
+
+            const payload = {
+                respondent: userId,
+                phase: "post",
+                time: duration,
+                correct: correct,
+                wrong: wrong,
+                answers: answers
+            };
+
+            sendData(payload)
+                .then(res => {
+                    alert("2차 설문이 저장되었습니다. 참여해주셔서 감사합니다!");
+                    showStage('stage5-complete');
+                })
+                .catch(err => alert("2차 설문 데이터 저장 중 에러 발생: " + err));
+        });
+
+        // 초기 화면 표시
+        document.addEventListener('DOMContentLoaded', () => {
+            showStage('stage1-start');
+        });
+    </script>
+</body>
+</html>

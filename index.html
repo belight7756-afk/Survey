@@ -67,16 +67,35 @@
 
     <script>
         // ====== 1. 질문 Pool ======
-        const questions = [
-            { q: "샘플 질문 1", options: ["A", "B", "C"], answer: "A" },
-            { q: "샘플 질문 2", options: ["True", "False"], answer: "True" },
-            { q: "샘플 질문 3", options: ["빨강", "파랑", "초록"], answer: "초록" }
+        const allQuestions = [
+            { q: "B737기가 지상에서 비상문이 개방되었다. 다음에 이뤄져야 할 절차는?", options: ["항공기 정지","승객 대피","TAXI로 이동","복귀"], answer: "항공기 정지" },
+            { q: "비상문 개방의 원인이 '테러, 정신질환, 마약'이라면, 다음으로 이뤄질 절차는?", options: ["정비절차 시행","보안절차 시행","승객 승하","관계인 파악"], answer: "보안절차 시행" },
+            { q: "비상문 개방의 원인이 '인적오류 및 기계결함'이라면, 다음으로 이뤄질 절차는?", options: ["보안절차 시행","슬라이드 교체","정비절차 시행","보안 및 장비 점검"], answer: "정비절차 시행" },
+            { q: "비상문 개방으로 인하여 항공기가 앞선 절차들을 마치고 항공기가 이동이 가능하다면, 다음으로 이뤄져야 할 절차는?", options: ["행위자 식별","활주로 정지","항공기 재점검","관계인 파악"], answer: "관계인 파악" },
+            { q: "항공기의 손상여부를 확인한 결과, 손상이 없다면, 다음으로 이뤄져야 할 절차는?", options: ["자력 복귀","견인 복귀","승객 승하","하선장비 이용"], answer: "자력 복귀" },
+            { q: "공항으로 접근중인 A321 항공기의 현재 고도는 3500ft이고 DA/H이상 고도에 있다. 이때 비상문이 개방되였는데 다음으로 해야 할 절차는?", options: ["Continue Approach","기내안전확보","Go Around","개방자 제압"], answer: "Go Around" },
+            { q: "DA/H이상에 있는 항공기가 공항 접근 중에 한 승객이 비상문을 개방 하려 한다. 승무원들이 제압 시도를 하고 있지만 그 승객은 계속 비상문을 개방 하려고 한다. 사무장이 이 소식을 조종사에게 전하자 곳바로 조종사는 기내난동이 있다고 판단하였다. 다음으로 해야 할 절차는?", options: ["행위자 식별->행위자 인도","착륙 진행->개방자 제압","개방자 제압->지상지원요청","Go Around->안전 확보 후 재접근"], answer: "Go Around->안전 확보 후 재접근"},
+            { q: "DA/H미만에 있는 항공기가 접근중 비상문이 개방되였다. 조종사는 Go Around 한 후에 안전확인하고 착륙 진행을 마쳤다. 하지만 아직도 개방자는 제압이 완전히 안됀 상태이다. 이 다음으로 수행해야 할 절차 순서는 무었인가?", options: ["활주로 정지->지상지원 요청","활주로 정지->기내 안전 확보->지상지원 요청","고속탈출유도로 이동->지상지원 요청","활주로 정지->기내 안전 확보->항공기 손상 여부 확인"], answer: "활주로 정지->기내 안전 확보->지상지원 요청"},
+            { q: "DA/H미만에 있는 항공기가 접근중 비상문이 개방되였다. 조종사는 Go Around 한 후에 안전확인하고 착륙 진행을 마쳤다. 개방자는 없었고 항공기 손상으로 인한 비상문이 개방 되였다. 이 다음으로 수행해야 할 절차 순서는 무었인가?", options: ["활주로 정지->지상지원 요청","활주로 정지->기내 안전 확보->지상지원 요청","고속탈출유도로 이동->지상지원 요청","활주로 정지->기내 안전 확보->항공기 손상 여부 확인"], answer: "활주로 정지->지내 안전 확보->지상지원 요청"},
+            { q: "DA/H미만에 있는 항공기가 접근중 비상문이 개방되였다. 조종사는Go Around 한 후에 안전확인하고 착륙 진행을 마쳤다. 개방자는 승무원들이 완전히 제압했다. 이 다음으로 수행해야 할 절차 순서는 무엇인가?", options: ["활주로 정지->지상지원 요청","활주로 정지->기내 안전 확보->지상지원 요청","고속탈출유도로 이동->지상지원 요청","활주로 정지->기내 안전 확보->항공기 손상 여부 확인"], answer: "고속탈출유도로 이동->지상지원 요청"},
+            { q: "'테러, 정신질환, 마약'이 개방 원인으로 판단되어 보안절차를 시행하고, 브레이크 행위자 식별 안전 확인이 완료되었다. 램프에서 이뤄져야 할 절차는?", options: ["이동", "문 닫기","슬라이드 교체","견인 복귀"], answer: "문 닫기"},
+            { q: "항공기의 손상여부를 확인한 결과, 손상이 있다면, 다음으로 이뤄져야 할 절차는?", options: ["행위자 인도","행위자 식별","승하 및 보안점검","관계인 파악"], answer: "승하 및 보안점검"},
+            { q: "'인적오류 및 기계결함'이 개방 원인으로 밝혀져 정비절차를 시행하고, 브레이크 안전 확인 후 지상지원을 요청하였다. 정비에서 이뤄져야 할 절차는?", options: ["문 닫기","자력복귀","보안절차 시행","슬라이드 교체"], answer: "슬라이드 교체"},
+            { q: "B777 항공기가 이륙 중 v1 미만에서 비상문이 개방되었고, 정지하여, 개방원인을 정비로 발견하였다. 다음으로 해야 할 절차는?", options: ["기내안전확인","지상지원요청","보안 및 장비 점검","슬라이드 교체"], answer: "기내안전확인"},
+            { q: "B777 항공기가 이륙 중 v1 이상에서 비상문이 개방되었다. 다음으로 해야 할 절차는?", options: ["랜딩","Go Around","개방자 제압","보안절차 시행"], answer: "Go Around"},
+            { q: "DA/H미만에 있는 항공기가 접근중 비상문이 개방되였다. 조종사는Go Around 한 후에 안전확인하고 착륙 진행을 마쳤다. 조종사는 개방자 제압 과정에서 승객 2명이 치명상을 입었다고 보고를 받았다. 이 다음으로 수행해야 할 절차 순서는 무었인가?", options: ["활주로 정지->지상지원 요청","활주로 정지->기내 안전 확보->지상지원 요청","고속탈출유도로 이동->지상지원 요청","활주로 정지->기내 안전 확보->항공기 손상 여부 확인"], answer: "활주로 정지->기내 안전 확보->지상지원 요청"},
+            { q: "A321 항공기가 순항중에 비상문이 개방되었다. 즉각 대응으로 다음 어떤 절차를 수행해야 하는가?", options: ["항공기 손상 파악","Landing", "보안절차 시행","기내안전확보, 안전고도비행"], answer: "기내안전확보, 안전고도비행"},
+            { q: "B737 항공기가 taxi 하고 있는 도 중 비상문이 개방 되었다. 다음으로 어떤 절차를 수행해야 하는가?", options: ["고속탈출유도로 이동","Gate로 이동","기내안전확인","정지"], answer: "정지"},
+            { q: "공항으로 접근중인 A330 항공기의 현재 고도는 1500ft이고 DA/H미만 고도에 있다. 이때 비상문이 개방되였는데 다음으로 해야 할 절차는?", options: ["Continue Approach","기내안전확보","Vacate","Go Around"], answer: "Go Around"},
+            { q: "공항으로 접근중인 A330 항공기의 현재 고도는 500ft이고 DA/H미만 고도에 있다. 이때 비상문이 개방되였는데 다음으로 해야 할 절차는?", options: ["Go Around","기내안전확보","Continue Approach","Vacate"], answer: "Go Around"},
         ];
 
         // ====== 2. 전역 변수 설정 ======
         let userId = '';
         let preStartTime;
         let postStartTime;
+        let preQuestions; // 1차 설문용 질문
+        let postQuestions; // 2차 설문용 질문
 
         // Google Apps Script URL
         const scriptURL = "https://script.google.com/macros/s/AKfycby4G5gWZeEz9bF49nrJeP6WXosP63OMldAB7Up9D_eFbA5NdNbqZqjUPm6dMC5zIZLjUw/exec";
@@ -85,6 +104,12 @@
         const showStage = (id) => {
             document.querySelectorAll('.stage').forEach(el => el.style.display = 'none');
             document.getElementById(id).style.display = 'block';
+        };
+
+        // 질문을 섞고 10개만 선택하는 함수
+        const getRandomQuestions = (questionList, num) => {
+            const shuffled = [...questionList].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, num);
         };
 
         const createQuestions = (formElement, questionList) => {
@@ -103,10 +128,10 @@
             });
         };
 
-        const getSurveyResults = (formElement) => {
+        const getSurveyResults = (formElement, questionList) => {
             let correct = 0, wrong = 0;
             const answers = [];
-            questions.forEach((item, idx) => {
+            questionList.forEach((item, idx) => {
                 const checked = formElement.querySelector(`input[name="q${idx}"]:checked`);
                 const ans = checked ? checked.value : "";
                 answers.push(ans);
@@ -132,13 +157,14 @@
             }
             userId = inputId;
             preStartTime = Date.now();
-            createQuestions(document.getElementById('preSurveyForm'), questions);
+            preQuestions = getRandomQuestions(allQuestions, 10); // 1차 설문용 10개 질문 선택
+            createQuestions(document.getElementById('preSurveyForm'), preQuestions);
             showStage('stage2-pre');
         });
 
         document.getElementById('nextToProtocolBtn').addEventListener('click', () => {
             const preSurveyForm = document.getElementById('preSurveyForm');
-            const { correct, wrong, answers } = getSurveyResults(preSurveyForm);
+            const { correct, wrong, answers } = getSurveyResults(preSurveyForm, preQuestions);
             const duration = Math.round((Date.now() - preStartTime) / 1000);
 
             const payload = {
@@ -160,13 +186,14 @@
 
         document.getElementById('nextToPostBtn').addEventListener('click', () => {
             postStartTime = Date.now();
-            createQuestions(document.getElementById('postSurveyForm'), questions);
+            postQuestions = getRandomQuestions(allQuestions, 10); // 2차 설문용 10개 질문 선택
+            createQuestions(document.getElementById('postSurveyForm'), postQuestions);
             showStage('stage4-post');
         });
 
         document.getElementById('submitFinalBtn').addEventListener('click', () => {
             const postSurveyForm = document.getElementById('postSurveyForm');
-            const { correct, wrong, answers } = getSurveyResults(postSurveyForm);
+            const { correct, wrong, answers } = getSurveyResults(postSurveyForm, postQuestions);
             const duration = Math.round((Date.now() - postStartTime) / 1000);
 
             const payload = {
